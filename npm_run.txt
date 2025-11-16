@@ -1,0 +1,1 @@
+cd "c:\Users\Firas Arfa\Desktop\pdc_chatbot_frontend\frontend"; npm run dev
