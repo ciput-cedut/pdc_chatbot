@@ -1,0 +1,269 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Bot, User, Sparkles, Menu, Settings, MessageSquare, Zap, Shield } from 'lucide-react';
+
+export default function ChatbotInterface() {
+  const [messages, setMessages] = useState([
+    { id: 1, text: "Hi! I'm your PDC AI Assistant. I'm here to help you with any questions or tasks. What would you like to know?", sender: 'bot', timestamp: new Date() }
+  ]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const quickActions = [
+    { icon: MessageSquare, label: 'General Help', prompt: 'I need help with general information' },
+    { icon: Zap, label: 'Quick Tips', prompt: 'Give me some quick tips' },
+    { icon: Shield, label: 'Support', prompt: 'I need support' }
+  ];
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+    }
+  }, [input]);
+
+  const handleSend = async (messageText = input) => {
+    if (!messageText.trim()) return;
+
+    const userMessage = {
+      id: messages.length + 1,
+      text: messageText,
+      sender: 'user',
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsTyping(true);
+
+    // Simulate bot response with varied replies
+    setTimeout(() => {
+      const responses = [
+        "I understand your query. I'm currently a demo interface, but I can be connected to powerful AI backends like Claude, GPT, or custom models to provide intelligent responses.",
+        "Thanks for your message! This is a demonstration of the chatbot interface. Connect me to your preferred AI service to unlock my full potential.",
+        "I'm processing your request. This UI supports real-time conversations, file uploads, and rich message formatting when connected to an AI backend."
+      ];
+      
+      const botMessage = {
+        id: messages.length + 2,
+        text: responses[Math.floor(Math.random() * responses.length)],
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, botMessage]);
+      setIsTyping(false);
+    }, 1500);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleQuickAction = (prompt) => {
+    handleSend(prompt);
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-0 sm:p-4">
+      <div className="w-full max-w-6xl h-screen sm:h-[700px] bg-slate-800/50 backdrop-blur-xl sm:rounded-3xl shadow-2xl flex overflow-hidden border-0 sm:border border-purple-500/20">
+        
+        {/* Sidebar - Hidden on mobile */}
+        <div className={`${showSidebar ? 'block' : 'hidden'} sm:block w-64 bg-slate-900/80 backdrop-blur-sm border-r border-purple-500/20 p-4 space-y-4`}>
+          <div className="flex items-center gap-3 pb-4 border-b border-purple-500/20">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-white font-semibold text-sm">PDC AI</h2>
+              <p className="text-purple-300 text-xs">v2.0 Pro</p>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <button className="w-full px-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 text-white rounded-xl transition-all duration-200 flex items-center gap-3 border border-purple-500/30">
+              <MessageSquare className="w-4 h-4" />
+              <span className="text-sm">New Chat</span>
+            </button>
+            
+            <div className="pt-4 space-y-1">
+              <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider px-2">Recent Chats</p>
+              <div className="space-y-1">
+                <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm">
+                  General inquiry...
+                </button>
+                <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm">
+                  Product support...
+                </button>
+                <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm">
+                  Technical help...
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute bottom-4 left-4 right-4 space-y-2">
+            <button className="w-full px-4 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 flex items-center gap-3 text-sm">
+              <Settings className="w-4 h-4" />
+              <span>Settings</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col bg-gradient-to-b from-slate-800/30 to-slate-900/30">
+          
+          {/* Header */}
+          <div className="bg-slate-900/60 backdrop-blur-sm p-4 sm:p-5 border-b border-purple-500/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowSidebar(!showSidebar)}
+                  className="sm:hidden w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center text-white"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
+                  <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold text-white">PDC AI Assistant</h1>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <p className="text-purple-300 text-xs sm:text-sm">Online • Ready to assist</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="px-3 py-1.5 bg-purple-600/20 border border-purple-500/30 rounded-lg">
+                  <span className="text-purple-300 text-xs font-medium">AI Powered</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Messages Container */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            {messages.length === 1 && (
+              <div className="mb-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="text-center space-y-2">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-purple-500/30">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white">Welcome to PDC AI</h2>
+                  <p className="text-purple-300 text-sm sm:text-base max-w-md mx-auto">
+                    Your intelligent assistant powered by advanced AI. How can I help you today?
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto mt-6">
+                  {quickActions.map((action, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleQuickAction(action.prompt)}
+                      className="p-4 bg-slate-800/50 hover:bg-slate-800/80 border border-purple-500/20 hover:border-purple-500/40 rounded-xl transition-all duration-200 group"
+                    >
+                      <action.icon className="w-6 h-6 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
+                      <p className="text-white text-sm font-medium">{action.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.map((message, index) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                  message.sender === 'bot' 
+                    ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-purple-500/50' 
+                    : 'bg-gradient-to-br from-blue-500 to-cyan-500 shadow-blue-500/50'
+                }`}>
+                  {message.sender === 'bot' ? (
+                    <Bot className="w-5 h-5 text-white" />
+                  ) : (
+                    <User className="w-5 h-5 text-white" />
+                  )}
+                </div>
+                
+                <div className={`max-w-[75%] sm:max-w-[70%] ${message.sender === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
+                  <div className={`px-4 py-3 rounded-2xl backdrop-blur-sm ${
+                    message.sender === 'bot'
+                      ? 'bg-slate-800/80 text-gray-100 shadow-xl border border-purple-500/20'
+                      : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-xl shadow-blue-500/20'
+                  }`}>
+                    <p className="text-sm leading-relaxed">{message.text}</p>
+                  </div>
+                  <span className="text-xs text-purple-400/60 mt-1.5 px-2">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              </div>
+            ))}
+            
+            {isTyping && (
+              <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/50">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+                <div className="bg-slate-800/80 backdrop-blur-sm px-4 py-3 rounded-2xl shadow-xl border border-purple-500/20">
+                  <div className="flex gap-1.5">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="p-4 sm:p-5 bg-slate-900/60 backdrop-blur-sm border-t border-purple-500/20">
+            <div className="flex gap-3 items-end max-w-4xl mx-auto">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your message here..."
+                  rows={1}
+                  className="w-full px-4 py-3 bg-slate-800/80 backdrop-blur-sm border border-purple-500/30 text-white placeholder-purple-300/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm shadow-lg"
+                  style={{ minHeight: '48px', maxHeight: '120px' }}
+                />
+              </div>
+              <button
+                onClick={() => handleSend()}
+                disabled={!input.trim()}
+                className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-purple-500/50 transform hover:scale-105 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0 shadow-lg"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-center text-purple-400/40 text-xs mt-3">
+              Powered by advanced AI • Your conversations are secure
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

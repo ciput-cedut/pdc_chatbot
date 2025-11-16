@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
@@ -7,6 +8,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     setError('');
@@ -46,7 +48,7 @@ export default function LoginPage() {
             <Sparkles className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 tracking-tight">Welcome Back</h1>
-          <p className="text-sm md:text-base text-gray-600">Sign in to continue to AI Assistant</p>
+          <p className="text-sm md:text-base text-gray-600">Sign in to continue to PDC Chatbot</p>
         </div>
 
         {/* Login Card */}
@@ -194,6 +196,15 @@ export default function LoginPage() {
           </a>
         </p>
       </div>
+
+      <button
+  onClick={() => navigate("/chatbot")}
+  className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg 
+             hover:bg-indigo-700 transition-all"
+>
+  Go to Chatbot
+</button>
+
     </div>
   );
 }
