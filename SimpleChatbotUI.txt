@@ -3,7 +3,7 @@ import { Send, Bot, User, Sparkles } from 'lucide-react';
 
 export default function ChatbotInterface() {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi! I'm your AI assistant. How can I help you today?", sender: 'bot', timestamp: new Date() }
+    { id: 1, text: "Hi! I'm your PDC Chatbot Assistant. How can I help you today?", sender: 'bot', timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -62,7 +62,7 @@ export default function ChatbotInterface() {
               <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold">AI Assistant</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">PDC AI</h1>
               <p className="text-indigo-100 text-xs sm:text-sm">Always here to help</p>
             </div>
           </div>

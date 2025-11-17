@@ -46,7 +46,6 @@ export default function ChatbotInterface() {
     setInput('');
     setIsTyping(true);
 
-    // Simulate bot response with varied replies
     setTimeout(() => {
       const responses = [
         "I understand your query. I'm currently a demo interface, but I can be connected to powerful AI backends like Claude, GPT, or custom models to provide intelligent responses.",
@@ -77,77 +76,88 @@ export default function ChatbotInterface() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-0 sm:p-4">
-      <div className="w-full max-w-6xl h-screen sm:h-[700px] bg-slate-800/50 backdrop-blur-xl sm:rounded-3xl shadow-2xl flex overflow-hidden border-0 sm:border border-purple-500/20">
+    <div className="fixed inset-0 w-full h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="w-full h-full flex overflow-hidden">
         
-        {/* Sidebar - Hidden on mobile */}
-        <div className={`${showSidebar ? 'block' : 'hidden'} sm:block w-64 bg-slate-900/80 backdrop-blur-sm border-r border-purple-500/20 p-4 space-y-4`}>
-          <div className="flex items-center gap-3 pb-4 border-b border-purple-500/20">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-white font-semibold text-sm">PDC AI</h2>
-              <p className="text-purple-300 text-xs">v2.0 Pro</p>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <button className="w-full px-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 text-white rounded-xl transition-all duration-200 flex items-center gap-3 border border-purple-500/30">
-              <MessageSquare className="w-4 h-4" />
-              <span className="text-sm">New Chat</span>
-            </button>
-            
-            <div className="pt-4 space-y-1">
-              <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider px-2">Recent Chats</p>
-              <div className="space-y-1">
-                <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm">
-                  General inquiry...
-                </button>
-                <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm">
-                  Product support...
-                </button>
-                <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm">
-                  Technical help...
-                </button>
+        {/* Sidebar - Overlay on mobile, fixed on desktop */}
+        {showSidebar && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setShowSidebar(false)}
+          />
+        )}
+        
+        <div className={`${
+          showSidebar ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0 fixed md:relative z-50 w-64 h-full bg-slate-900/95 backdrop-blur-sm border-r border-purple-500/20 transition-transform duration-300 ease-in-out`}>
+          <div className="flex flex-col h-full p-4">
+            <div className="flex items-center gap-3 pb-4 border-b border-purple-500/20">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-white font-semibold text-sm">PDC AI</h2>
+                <p className="text-purple-300 text-xs">v2.0 Pro</p>
               </div>
             </div>
-          </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-2 mt-4">
+              <button className="w-full px-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 text-white rounded-xl transition-all duration-200 flex items-center gap-3 border border-purple-500/30">
+                <MessageSquare className="w-4 h-4" />
+                <span className="text-sm">New Chat</span>
+              </button>
+              
+              <div className="pt-4 space-y-1">
+                <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider px-2">Recent Chats</p>
+                <div className="space-y-1">
+                  <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm truncate">
+                    General inquiry...
+                  </button>
+                  <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm truncate">
+                    Product support...
+                  </button>
+                  <button className="w-full px-3 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 text-left text-sm truncate">
+                    Technical help...
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <div className="absolute bottom-4 left-4 right-4 space-y-2">
-            <button className="w-full px-4 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 flex items-center gap-3 text-sm">
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
-            </button>
+            <div className="pt-4 border-t border-purple-500/20">
+              <button className="w-full px-4 py-2 text-gray-300 hover:bg-slate-800/50 rounded-lg transition-all duration-200 flex items-center gap-3 text-sm">
+                <Settings className="w-4 h-4" />
+                <span>Settings</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col bg-gradient-to-b from-slate-800/30 to-slate-900/30">
+        <div className="flex-1 flex flex-col bg-gradient-to-b from-slate-800/30 to-slate-900/30 h-full overflow-hidden">
           
           {/* Header */}
-          <div className="bg-slate-900/60 backdrop-blur-sm p-4 sm:p-5 border-b border-purple-500/20">
+          <div className="bg-slate-900/60 backdrop-blur-sm p-4 md:p-5 border-b border-purple-500/20 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowSidebar(!showSidebar)}
-                  className="sm:hidden w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center text-white"
+                  className="md:hidden w-10 h-10 bg-purple-600/20 rounded-xl flex items-center justify-center text-white hover:bg-purple-600/30 transition-colors"
                 >
                   <Menu className="w-5 h-5" />
                 </button>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
-                  <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
+                  <Bot className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-xl font-bold text-white">PDC AI Assistant</h1>
+                  <h1 className="text-base md:text-xl font-bold text-white">PDC AI Assistant</h1>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <p className="text-purple-300 text-xs sm:text-sm">Online • Ready to assist</p>
+                    <p className="text-purple-300 text-xs md:text-sm">Online • Ready to assist</p>
                   </div>
                 </div>
               </div>
               
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <div className="px-3 py-1.5 bg-purple-600/20 border border-purple-500/30 rounded-lg">
                   <span className="text-purple-300 text-xs font-medium">AI Powered</span>
                 </div>
@@ -156,20 +166,20 @@ export default function ChatbotInterface() {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
             {messages.length === 1 && (
               <div className="mb-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="text-center space-y-2">
                   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-purple-500/30">
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white">Welcome to PDC AI</h2>
-                  <p className="text-purple-300 text-sm sm:text-base max-w-md mx-auto">
+                  <h2 className="text-xl md:text-3xl font-bold text-white">Welcome to PDC AI</h2>
+                  <p className="text-purple-300 text-sm md:text-base max-w-md mx-auto px-4">
                     Your intelligent assistant powered by advanced AI. How can I help you today?
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto mt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto mt-6 px-4">
                   {quickActions.map((action, index) => (
                     <button
                       key={index}
@@ -190,7 +200,7 @@ export default function ChatbotInterface() {
                 className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
                   message.sender === 'bot' 
                     ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-purple-500/50' 
                     : 'bg-gradient-to-br from-blue-500 to-cyan-500 shadow-blue-500/50'
@@ -202,7 +212,7 @@ export default function ChatbotInterface() {
                   )}
                 </div>
                 
-                <div className={`max-w-[75%] sm:max-w-[70%] ${message.sender === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
+                <div className={`max-w-[75%] md:max-w-[70%] ${message.sender === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
                   <div className={`px-4 py-3 rounded-2xl backdrop-blur-sm ${
                     message.sender === 'bot'
                       ? 'bg-slate-800/80 text-gray-100 shadow-xl border border-purple-500/20'
@@ -219,7 +229,7 @@ export default function ChatbotInterface() {
             
             {isTyping && (
               <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/50">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/50">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
                 <div className="bg-slate-800/80 backdrop-blur-sm px-4 py-3 rounded-2xl shadow-xl border border-purple-500/20">
@@ -236,7 +246,7 @@ export default function ChatbotInterface() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 sm:p-5 bg-slate-900/60 backdrop-blur-sm border-t border-purple-500/20">
+          <div className="p-4 md:p-5 bg-slate-900/60 backdrop-blur-sm border-t border-purple-500/20 flex-shrink-0">
             <div className="flex gap-3 items-end max-w-4xl mx-auto">
               <div className="flex-1 relative">
                 <textarea
