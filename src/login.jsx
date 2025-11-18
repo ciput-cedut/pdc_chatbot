@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, Settings } from 'lucide-react';
 
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,7 +81,7 @@ export default function LoginPage() {
           }`}>Welcome Back</h1>
           <p className={`text-sm md:text-base ${
             isDarkTheme ? 'text-purple-300' : 'text-purple-600'
-          }`}>Log in to continue to PDC AI</p>
+          }`}>Log in to continue to YEM PDC Chatbot</p>
         </div>
 
         {/* Login Card */}
@@ -125,7 +126,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="you@example.com"
+                  placeholder="yourname@music.yamaha.com"
                   className={`w-full pl-12 pr-4 py-3.5 ${
                     isDarkTheme 
                       ? 'bg-slate-900/50 border-purple-500/30 text-white placeholder-purple-400/50' 

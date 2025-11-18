@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Menu, Settings, MessageSquare, Zap, Shield } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Menu, Settings, Square } from 'lucide-react';
 
 export default function ChatbotInterface() {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi! I'm your PDC AI Assistant. I'm here to help you with any questions or tasks. What would you like to know?", sender: 'bot', timestamp: new Date() }
+    { id: 1, text: "Hi! I'm your AI Assistant. I'm here to help you with any questions or tasks. What would you like to know?", sender: 'bot', timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -12,12 +12,7 @@ export default function ChatbotInterface() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
-
-  const quickActions = [
-    { icon: MessageSquare, label: 'General Help', prompt: 'I need help with general information' },
-    { icon: Zap, label: 'Quick Tips', prompt: 'Give me some quick tips' },
-    { icon: Shield, label: 'Support', prompt: 'I need support' }
-  ];
+  const responseTimeoutRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,7 +43,7 @@ export default function ChatbotInterface() {
     setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    responseTimeoutRef.current = setTimeout(() => {
       const responses = [
         "I understand your query. I'm currently a demo interface, but I can be connected to powerful AI backends like Claude, GPT, or custom models to provide intelligent responses.",
         "Thanks for your message! This is a demonstration of the chatbot interface. Connect me to your preferred AI service to unlock my full potential.",
@@ -63,7 +58,24 @@ export default function ChatbotInterface() {
       };
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
+      responseTimeoutRef.current = null;
     }, 1500);
+  };
+
+  const handleStop = () => {
+    if (responseTimeoutRef.current) {
+      clearTimeout(responseTimeoutRef.current);
+      responseTimeoutRef.current = null;
+    }
+    setIsTyping(false);
+    
+    const stoppedMessage = {
+      id: messages.length + 1,
+      text: "Response stopped by user.",
+      sender: 'bot',
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, stoppedMessage]);
   };
 
   const handleKeyPress = (e) => {
@@ -71,10 +83,6 @@ export default function ChatbotInterface() {
       e.preventDefault();
       handleSend();
     }
-  };
-
-  const handleQuickAction = (prompt) => {
-    handleSend(prompt);
   };
 
   return (
@@ -85,73 +93,43 @@ export default function ChatbotInterface() {
     }`}>
       <div className="w-full h-full flex overflow-hidden">
         
-        {/* Sidebar - Overlay on mobile, fixed on desktop */}
+        {/* Compact Sidebar - Hidden by default, shown on click */}
         {showSidebar && (
           <div 
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/50 z-40"
             onClick={() => setShowSidebar(false)}
           />
         )}
         
         <div className={`${
           showSidebar ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 fixed md:relative z-50 w-64 h-full ${
+        } fixed z-50 w-72 h-full ${
           isDarkTheme ? 'bg-slate-900/95' : 'bg-white/95'
         } backdrop-blur-sm border-r ${
           isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'
-        } transition-transform duration-300 ease-in-out`}>
-          <div className="flex flex-col h-full p-4">
-            <div className={`flex items-center gap-3 pb-4 border-b ${
+        } transition-transform duration-300 ease-in-out shadow-2xl`}>
+          <div className="flex flex-col h-full p-6">
+            <div className={`flex items-center gap-3 pb-6 border-b ${
               isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'
             }`}>
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Sparkles className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h2 className={`font-semibold text-sm ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>PDC AI</h2>
-                <p className={`text-xs ${isDarkTheme ? 'text-purple-300' : 'text-purple-600'}`}>v2.0 Pro</p>
+                <h2 className={`font-bold text-base ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>YEM PDC Chatbot</h2>
+                <p className={`text-xs ${isDarkTheme ? 'text-purple-300' : 'text-purple-600'}`}>v0.0.2</p>
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto space-y-2 mt-4">
-              <button className={`w-full px-4 py-3 ${
-                isDarkTheme ? 'bg-purple-600/20 hover:bg-purple-600/30 text-white border-purple-500/30' : 'bg-purple-100 hover:bg-purple-200 text-purple-900 border-purple-300'
-              } rounded-xl transition-all duration-200 flex items-center gap-3 border`}>
-                <MessageSquare className="w-4 h-4" />
-                <span className="text-sm">New Chat</span>
-              </button>
-              
-              <div className="pt-4 space-y-1">
-                <p className={`text-xs font-semibold uppercase tracking-wider px-2 ${
-                  isDarkTheme ? 'text-purple-300' : 'text-purple-700'
-                }`}>Recent Chats</p>
-                <div className="space-y-1">
-                  <button className={`w-full px-3 py-2 ${
-                    isDarkTheme ? 'text-gray-300 hover:bg-slate-800/50' : 'text-gray-700 hover:bg-purple-50'
-                  } rounded-lg transition-all duration-200 text-left text-sm truncate`}>
-                    General inquiry...
-                  </button>
-                  <button className={`w-full px-3 py-2 ${
-                    isDarkTheme ? 'text-gray-300 hover:bg-slate-800/50' : 'text-gray-700 hover:bg-purple-50'
-                  } rounded-lg transition-all duration-200 text-left text-sm truncate`}>
-                    Product support...
-                  </button>
-                  <button className={`w-full px-3 py-2 ${
-                    isDarkTheme ? 'text-gray-300 hover:bg-slate-800/50' : 'text-gray-700 hover:bg-purple-50'
-                  } rounded-lg transition-all duration-200 text-left text-sm truncate`}>
-                    Technical help...
-                  </button>
-                </div>
-              </div>
-            </div>
+            <div className="flex-1"></div>
 
-            <div className={`pt-4 border-t ${isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'}`}>
+            <div className={`pt-6 border-t ${isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'}`}>
               <button 
                 onClick={() => setShowSettings(!showSettings)}
-                className={`w-full px-4 py-2 ${
+                className={`w-full px-4 py-3 ${
                   isDarkTheme ? 'text-gray-300 hover:bg-slate-800/50' : 'text-gray-700 hover:bg-purple-50'
-                } rounded-lg transition-all duration-200 flex items-center gap-3 text-sm`}>
-                <Settings className="w-4 h-4" />
+                } rounded-xl transition-all duration-200 flex items-center gap-3 text-sm font-medium`}>
+                <Settings className="w-5 h-5" />
                 <span>Settings</span>
               </button>
             </div>
@@ -173,7 +151,7 @@ export default function ChatbotInterface() {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowSidebar(!showSidebar)}
-                  className={`md:hidden w-10 h-10 ${
+                  className={`w-10 h-10 ${
                     isDarkTheme ? 'bg-purple-600/20 hover:bg-purple-600/30' : 'bg-purple-100 hover:bg-purple-200'
                   } rounded-xl flex items-center justify-center ${
                     isDarkTheme ? 'text-white' : 'text-purple-900'
@@ -187,7 +165,7 @@ export default function ChatbotInterface() {
                 <div>
                   <h1 className={`text-base md:text-xl font-bold ${
                     isDarkTheme ? 'text-white' : 'text-gray-900'
-                  }`}>PDC AI Assistant</h1>
+                  }`}>YEM PDC CHATBOT</h1>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                     <p className={`text-xs md:text-sm ${
@@ -219,33 +197,12 @@ export default function ChatbotInterface() {
                   </div>
                   <h2 className={`text-xl md:text-3xl font-bold ${
                     isDarkTheme ? 'text-white' : 'text-gray-900'
-                  }`}>Welcome to PDC AI</h2>
+                  }`}>Welcome to YEM PDC Chatbot</h2>
                   <p className={`text-sm md:text-base max-w-md mx-auto px-4 ${
                     isDarkTheme ? 'text-purple-300' : 'text-purple-600'
                   }`}>
-                    Your intelligent assistant powered by advanced AI. How can I help you today?
+                    Your intelligent assistant powered by Azure AI Foundry. How can I help you today?
                   </p>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto mt-6 px-4">
-                  {quickActions.map((action, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleQuickAction(action.prompt)}
-                      className={`p-4 ${
-                        isDarkTheme 
-                          ? 'bg-slate-800/50 hover:bg-slate-800/80 border-purple-500/20 hover:border-purple-500/40' 
-                          : 'bg-white/50 hover:bg-white/80 border-purple-200 hover:border-purple-400'
-                      } border rounded-xl transition-all duration-200 group`}
-                    >
-                      <action.icon className={`w-6 h-6 mb-2 group-hover:scale-110 transition-transform ${
-                        isDarkTheme ? 'text-purple-400' : 'text-purple-600'
-                      }`} />
-                      <p className={`text-sm font-medium ${
-                        isDarkTheme ? 'text-white' : 'text-gray-900'
-                      }`}>{action.label}</p>
-                    </button>
-                  ))}
                 </div>
               </div>
             )}
@@ -259,12 +216,14 @@ export default function ChatbotInterface() {
                 <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
                   message.sender === 'bot' 
                     ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-purple-500/50' 
-                    : 'bg-gradient-to-br from-blue-500 to-cyan-500 shadow-blue-500/50'
+                    : isDarkTheme
+                      ? 'bg-white shadow-gray-500/50'
+                      : 'bg-gradient-to-br from-orange-500 to-amber-500 shadow-orange-500/50'
                 }`}>
                   {message.sender === 'bot' ? (
                     <Bot className="w-5 h-5 text-white" />
                   ) : (
-                    <User className="w-5 h-5 text-white" />
+                    <User className={`w-5 h-5 ${isDarkTheme ? 'text-gray-900' : 'text-white'}`} />
                   )}
                 </div>
                 
@@ -274,7 +233,9 @@ export default function ChatbotInterface() {
                       ? isDarkTheme 
                         ? 'bg-slate-800/80 text-gray-100 shadow-xl border border-purple-500/20'
                         : 'bg-white text-gray-900 shadow-xl border border-purple-200'
-                      : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-xl shadow-blue-500/20'
+                      : isDarkTheme
+                        ? 'bg-white text-gray-900 shadow-xl'
+                        : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xl shadow-orange-500/20'
                   }`}>
                     <p className="text-sm leading-relaxed">{message.text}</p>
                   </div>
@@ -328,26 +289,36 @@ export default function ChatbotInterface() {
                   onKeyPress={handleKeyPress}
                   placeholder="Type your message here..."
                   rows={1}
+                  disabled={isTyping}
                   className={`w-full px-4 py-3 ${
                     isDarkTheme 
                       ? 'bg-slate-800/80 border-purple-500/30 text-white placeholder-purple-300/50' 
                       : 'bg-white border-purple-200 text-gray-900 placeholder-purple-400/50'
-                  } backdrop-blur-sm border rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm shadow-lg`}
+                  } backdrop-blur-sm border rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
                   style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
               </div>
-              <button
-                onClick={() => handleSend()}
-                disabled={!input.trim()}
-                className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-purple-500/50 transform hover:scale-105 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0 shadow-lg"
-              >
-                <Send className="w-5 h-5" />
-              </button>
+              {isTyping ? (
+                <button
+                  onClick={handleStop}
+                  className="w-12 h-12 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-200 flex-shrink-0 shadow-lg"
+                >
+                  <Square className="w-5 h-5" fill="currentColor" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleSend()}
+                  disabled={!input.trim()}
+                  className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-purple-500/50 transform hover:scale-105 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0 shadow-lg"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              )}
             </div>
             <p className={`text-center text-xs mt-3 ${
               isDarkTheme ? 'text-purple-400/40' : 'text-purple-600/40'
             }`}>
-              Powered by advanced AI • Your conversations are secure
+              Powered by Azure AI • Your conversations are secure
             </p>
           </div>
         </div>
@@ -405,7 +376,7 @@ export default function ChatbotInterface() {
               }`}>
                 <h3 className={`font-semibold mb-2 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>About</h3>
                 <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
-                  PDC AI Assistant v2.0 Pro
+                  YEM PDC Chatbot v0.0.2
                 </p>
               </div>
             </div>
