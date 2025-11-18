@@ -1,4 +1,4 @@
-cd "c:\Users\Firas Arfa\Desktop\pdc_chatbot_frontend\frontend"; npm run dev
+cd "c:\Users\Firas Arfa\Desktop\chatbot\pdc_chatbot"; npm run dev
 
 cd "c:\Users\YemPDC01\Desktop\pdc_chatbot"; npm run dev
 

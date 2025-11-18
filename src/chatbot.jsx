@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, Menu, Settings, Square } from 'lucide-react';
+import logo from './assets/logo.svg';
 
 export default function ChatbotInterface() {
   const [messages, setMessages] = useState([
@@ -86,7 +87,7 @@ export default function ChatbotInterface() {
   };
 
   return (
-    <div className={`fixed inset-0 w-full h-full ${
+    <div className={`fixed inset-0 w-full h-full transition-colors duration-300 ${
       isDarkTheme 
         ? 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900' 
         : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'
@@ -107,13 +108,13 @@ export default function ChatbotInterface() {
           isDarkTheme ? 'bg-slate-900/95' : 'bg-white/95'
         } backdrop-blur-sm border-r ${
           isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'
-        } transition-transform duration-300 ease-in-out shadow-2xl`}>
+        } transition-all duration-300 ease-in-out shadow-2xl`}>
           <div className="flex flex-col h-full p-6">
             <div className={`flex items-center gap-3 pb-6 border-b ${
               isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'
             }`}>
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Sparkles className="w-7 h-7 text-white" />
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg p-1.5">
+                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h2 className={`font-bold text-base ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>YEM PDC Chatbot</h2>
@@ -137,7 +138,7 @@ export default function ChatbotInterface() {
         </div>
 
         {/* Main Chat Area */}
-        <div className={`flex-1 flex flex-col ${
+        <div className={`flex-1 flex flex-col transition-colors duration-300 ${
           isDarkTheme ? 'bg-gradient-to-b from-slate-800/30 to-slate-900/30' : 'bg-gradient-to-b from-white/30 to-purple-50/30'
         } h-full overflow-hidden`}>
           
@@ -146,7 +147,7 @@ export default function ChatbotInterface() {
             isDarkTheme ? 'bg-slate-900/60' : 'bg-white/60'
           } backdrop-blur-sm p-4 md:p-5 border-b ${
             isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'
-          } flex-shrink-0`}>
+          } flex-shrink-0 transition-all duration-300`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button 
@@ -159,8 +160,8 @@ export default function ChatbotInterface() {
                 >
                   <Menu className="w-5 h-5" />
                 </button>
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center animate-pulse shadow-lg shadow-purple-500/50">
-                  <Bot className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-lg p-1.5">
+                  <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <h1 className={`text-base md:text-xl font-bold ${
@@ -175,6 +176,7 @@ export default function ChatbotInterface() {
                 </div>
               </div>
               
+              {/*
               <div className="hidden md:flex items-center gap-2">
                 <div className={`px-3 py-1.5 ${
                   isDarkTheme ? 'bg-purple-600/20 border-purple-500/30' : 'bg-purple-100 border-purple-300'
@@ -184,6 +186,7 @@ export default function ChatbotInterface() {
                   }`}>AI Powered</span>
                 </div>
               </div>
+              */}
             </div>
           </div>
 
@@ -192,8 +195,8 @@ export default function ChatbotInterface() {
             {messages.length === 1 && (
               <div className="mb-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="text-center space-y-2">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-purple-500/30">
-                    <Sparkles className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-xl shadow-purple-500/30 p-2">
+                    <img src={logo} alt="Logo" className="w-full h-full object-contain" />
                   </div>
                   <h2 className={`text-xl md:text-3xl font-bold ${
                     isDarkTheme ? 'text-white' : 'text-gray-900'
@@ -235,12 +238,14 @@ export default function ChatbotInterface() {
                         : 'bg-white text-gray-900 shadow-xl border border-purple-200'
                       : isDarkTheme
                         ? 'bg-white text-gray-900 shadow-xl'
-                        : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-xl shadow-orange-500/20'
+                        : 'bg-orange-100 text-gray-900 shadow-xl border border-orange-500'
                   }`}>
                     <p className="text-sm leading-relaxed">{message.text}</p>
                   </div>
                   <span className={`text-xs mt-1.5 px-2 ${
-                    isDarkTheme ? 'text-purple-400/60' : 'text-purple-600/60'
+                    message.sender === 'user'
+                      ? isDarkTheme ? 'text-white' : 'text-orange-500'
+                      : isDarkTheme ? 'text-purple-400/60' : 'text-purple-600/60'
                   }`}>
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
@@ -277,9 +282,7 @@ export default function ChatbotInterface() {
           </div>
 
           {/* Input Area */}
-          <div className={`p-4 md:p-5 ${
-            isDarkTheme ? 'bg-slate-900/60 border-purple-500/20' : 'bg-white/60 border-purple-200'
-          } backdrop-blur-sm border-t flex-shrink-0`}>
+          <div className="p-4 md:p-5 transition-colors duration-300">
             <div className="flex gap-3 items-end max-w-4xl mx-auto">
               <div className="flex-1 relative">
                 <textarea
@@ -359,7 +362,7 @@ export default function ChatbotInterface() {
                   <button
                     onClick={() => setIsDarkTheme(!isDarkTheme)}
                     className={`relative w-14 h-8 rounded-full transition-colors ${
-                      isDarkTheme ? 'bg-purple-600' : 'bg-purple-400'
+                      isDarkTheme ? 'bg-purple-600' : 'bg-gray-300'
                     }`}
                   >
                     <div 
