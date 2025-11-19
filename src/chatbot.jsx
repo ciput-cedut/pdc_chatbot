@@ -1,16 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Menu, Settings, Square } from 'lucide-react';
-import logo from './assets/logo.svg';
+import { Send, Bot, User, Sparkles, Menu, Settings, Square, Copy, Check, RefreshCw, Edit2 } from 'lucide-react';
 
 export default function ChatbotInterface() {
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi! I'm your AI Assistant. I'm here to help you with any questions or tasks. What would you like to know?", sender: 'bot', timestamp: new Date() }
+    { id: 1, text: "Hello! I'm Aeterna. I'm here to make things easier for you. What can I do for you?", sender: 'bot', timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
+  const [regeneratingMessageId, setRegeneratingMessageId] = useState(null);
+  const [hoveredMessageId, setHoveredMessageId] = useState(null);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editText, setEditText] = useState('');
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const responseTimeoutRef = useRef(null);
@@ -33,6 +37,7 @@ export default function ChatbotInterface() {
   const handleSend = async (messageText = input) => {
     if (!messageText.trim()) return;
 
+    // Normal send flow
     const userMessage = {
       id: messages.length + 1,
       text: messageText,
@@ -86,6 +91,107 @@ export default function ChatbotInterface() {
     }
   };
 
+  const handleCopy = async (text, messageId) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedMessageId(messageId);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
+  };
+
+  const handleRegenerate = (messageId) => {
+    // Find the bot message being regenerated
+    const botMessageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (botMessageIndex === -1) return;
+
+    // Find the user message that prompted this bot response
+    const userMessageIndex = botMessageIndex - 1;
+    if (userMessageIndex < 0 || messages[userMessageIndex].sender !== 'user') return;
+
+    // Remove the bot message being regenerated AND all subsequent messages
+    const messagesToKeep = messages.slice(0, botMessageIndex);
+    setMessages(messagesToKeep);
+    
+    setRegeneratingMessageId(messageId);
+    setIsTyping(true);
+
+    responseTimeoutRef.current = setTimeout(() => {
+      const responses = [
+        "I understand your query. I'm currently a demo interface, but I can be connected to powerful AI backends like Claude, GPT, or custom models to provide intelligent responses.",
+        "Thanks for your message! This is a demonstration of the chatbot interface. Connect me to your preferred AI service to unlock my full potential.",
+        "I'm processing your request. This UI supports real-time conversations, file uploads, and rich message formatting when connected to an AI backend."
+      ];
+      
+      const newBotMessage = {
+        id: Date.now(), // Use timestamp for unique ID
+        text: responses[Math.floor(Math.random() * responses.length)],
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, newBotMessage]);
+      setIsTyping(false);
+      setRegeneratingMessageId(null);
+      responseTimeoutRef.current = null;
+    }, 1500);
+  };
+
+  const handleEditMessage = (messageId) => {
+    const message = messages.find(msg => msg.id === messageId);
+    if (message) {
+      setEditingMessageId(messageId);
+      setEditText(message.text);
+    }
+  };
+
+  const handleSaveEdit = (messageId) => {
+    if (!editText.trim()) return;
+
+    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex !== -1) {
+      // Update the user message
+      const updatedMessages = [...messages];
+      updatedMessages[messageIndex] = {
+        ...updatedMessages[messageIndex],
+        text: editText,
+        timestamp: new Date()
+      };
+      
+      // Remove subsequent bot responses (if any)
+      const messagesToKeep = updatedMessages.slice(0, messageIndex + 1);
+      setMessages(messagesToKeep);
+      setEditingMessageId(null);
+      setEditText('');
+      setIsTyping(true);
+
+      // Generate new bot response
+      responseTimeoutRef.current = setTimeout(() => {
+        const responses = [
+          "I understand your query. I'm currently a demo interface, but I can be connected to powerful AI backends like Claude, GPT, or custom models to provide intelligent responses.",
+          "Thanks for your message! This is a demonstration of the chatbot interface. Connect me to your preferred AI service to unlock my full potential.",
+          "I'm processing your request. This UI supports real-time conversations, file uploads, and rich message formatting when connected to an AI backend."
+        ];
+        
+        const botMessage = {
+          id: Date.now(),
+          text: responses[Math.floor(Math.random() * responses.length)],
+          sender: 'bot',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, botMessage]);
+        setIsTyping(false);
+        responseTimeoutRef.current = null;
+      }, 1500);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditText('');
+  };
+
   return (
     <div className={`fixed inset-0 w-full h-full transition-colors duration-300 ${
       isDarkTheme 
@@ -113,8 +219,8 @@ export default function ChatbotInterface() {
             <div className={`flex items-center gap-3 pb-6 border-b ${
               isDarkTheme ? 'border-purple-500/20' : 'border-purple-200'
             }`}>
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg p-1.5">
-                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+                <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className={`font-bold text-base ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>YEM PDC Chatbot</h2>
@@ -160,8 +266,8 @@ export default function ChatbotInterface() {
                 >
                   <Menu className="w-5 h-5" />
                 </button>
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-lg p-1.5">
-                  <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+                  <Bot className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
                 <div>
                   <h1 className={`text-base md:text-xl font-bold ${
@@ -195,8 +301,8 @@ export default function ChatbotInterface() {
             {messages.length === 1 && (
               <div className="mb-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="text-center space-y-2">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-xl shadow-purple-500/30 p-2">
-                    <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-purple-500/30">
+                    <Bot className="w-8 h-8 text-white" />
                   </div>
                   <h2 className={`text-xl md:text-3xl font-bold ${
                     isDarkTheme ? 'text-white' : 'text-gray-900'
@@ -213,20 +319,20 @@ export default function ChatbotInterface() {
             {messages.map((message, index) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in slide-in-from-bottom-2 duration-300 group`}
                 style={{ animationDelay: `${index * 50}ms` }}
+                onMouseEnter={() => setHoveredMessageId(message.id)}
+                onMouseLeave={() => setHoveredMessageId(null)}
               >
                 <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
                   message.sender === 'bot' 
                     ? 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-purple-500/50' 
-                    : isDarkTheme
-                      ? 'bg-white shadow-gray-500/50'
-                      : 'bg-gradient-to-br from-orange-500 to-amber-500 shadow-orange-500/50'
+                    : 'bg-gradient-to-br from-orange-500 to-amber-500 shadow-orange-500/50'
                 }`}>
                   {message.sender === 'bot' ? (
                     <Bot className="w-5 h-5 text-white" />
                   ) : (
-                    <User className={`w-5 h-5 ${isDarkTheme ? 'text-gray-900' : 'text-white'}`} />
+                    <User className="w-5 h-5 text-white" />
                   )}
                 </div>
                 
@@ -240,15 +346,108 @@ export default function ChatbotInterface() {
                         ? 'bg-white text-gray-900 shadow-xl'
                         : 'bg-orange-100 text-gray-900 shadow-xl border border-orange-500'
                   }`}>
-                    <p className="text-sm leading-relaxed">{message.text}</p>
+                    {editingMessageId === message.id ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className={`w-full px-3 py-2 text-sm leading-relaxed ${
+                            isDarkTheme 
+                              ? 'bg-slate-100 text-gray-900' 
+                              : 'bg-white text-gray-900'
+                          } border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none overflow-hidden`}
+                          rows={3}
+                          autoFocus
+                          onInput={(e) => {
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                          }}
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={handleCancelEdit}
+                            className={`px-3 py-1.5 text-xs rounded-lg ${
+                              isDarkTheme ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                            } transition-colors`}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSaveEdit(message.id)}
+                            className="px-3 py-1.5 text-xs bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                          >
+                            Save & Send
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-relaxed">{message.text}</p>
+                    )}
                   </div>
-                  <span className={`text-xs mt-1.5 px-2 ${
-                    message.sender === 'user'
-                      ? isDarkTheme ? 'text-white' : 'text-orange-500'
-                      : isDarkTheme ? 'text-purple-400/60' : 'text-purple-600/60'
-                  }`}>
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    {message.sender === 'user' && (
+                      <div className={`flex items-center gap-1 transition-all duration-300 ${
+                        hoveredMessageId === message.id ? 'opacity-100 max-w-[100px]' : 'opacity-0 max-w-0 overflow-hidden'
+                      }`}>
+                        <button
+                          onClick={() => handleCopy(message.text, message.id)}
+                          className={`p-1 ${
+                            isDarkTheme ? 'text-white hover:text-gray-200' : 'text-orange-600 hover:text-orange-700'
+                          } transition-colors`}
+                          title="Copy"
+                        >
+                          {copiedMessageId === message.id ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleEditMessage(message.id)}
+                          className={`p-1 ${
+                            isDarkTheme ? 'text-white hover:text-gray-200' : 'text-orange-600 hover:text-orange-700'
+                          } transition-colors`}
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                    <span className={`text-xs px-2 ${
+                      message.sender === 'user'
+                        ? isDarkTheme ? 'text-white' : 'text-orange-500'
+                        : isDarkTheme ? 'text-purple-400/60' : 'text-purple-600/60'
+                    }`}>
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    {message.sender === 'bot' && message.id !== 1 && (
+                      <>
+                        <button
+                          onClick={() => handleCopy(message.text, message.id)}
+                          className={`p-1 ${
+                            isDarkTheme ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'
+                          } transition-colors`}
+                          title="Copy"
+                        >
+                          {copiedMessageId === message.id ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleRegenerate(message.id)}
+                          disabled={isTyping}
+                          className={`p-1 ${
+                            isDarkTheme ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'
+                          } transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                          title="Refresh"
+                        >
+                          <RefreshCw className={`w-4 h-4 ${regeneratingMessageId === message.id ? 'animate-spin' : ''}`} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -297,7 +496,7 @@ export default function ChatbotInterface() {
                     isDarkTheme 
                       ? 'bg-slate-800/80 border-purple-500/30 text-white placeholder-purple-300/50' 
                       : 'bg-white border-purple-200 text-gray-900 placeholder-purple-400/50'
-                  } backdrop-blur-sm border rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
+                  } backdrop-blur-sm border rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
                   style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
               </div>
