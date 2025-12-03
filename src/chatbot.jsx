@@ -246,6 +246,11 @@ export default function ChatbotInterface() {
     }));
 
     setUploadedFiles(prev => [...prev, ...fileObjects]);
+    
+    // Reset file input to allow uploading the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleRemoveFile = (fileId) => {
