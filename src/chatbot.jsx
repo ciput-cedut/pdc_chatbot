@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Menu, Settings, Square, Copy, Check, RefreshCw, Edit2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Menu, Settings, Square, Copy, Check, RefreshCw, Edit2, Paperclip, X, File } from 'lucide-react';
 
 export default function ChatbotInterface() {
   const [messages, setMessages] = useState([
@@ -15,8 +15,10 @@ export default function ChatbotInterface() {
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editText, setEditText] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
   const responseTimeoutRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -35,26 +37,65 @@ export default function ChatbotInterface() {
   }, [input]);
 
   const handleSend = async (messageText = input) => {
-    if (!messageText.trim()) return;
+    if (!messageText.trim() && uploadedFiles.length === 0) return;
 
-    // Normal send flow
+    // Upload files to backend if any
+    let savedFiles = [];
+    if (uploadedFiles.length > 0) {
+      try {
+        const formData = new FormData();
+        uploadedFiles.forEach(fileObj => {
+          formData.append('files', fileObj.file);
+        });
+
+        const response = await fetch('http://localhost:3001/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          savedFiles = result.files;
+          console.log('Files saved successfully:', savedFiles);
+        }
+      } catch (error) {
+        console.error('Error uploading files:', error);
+        // Continue anyway - files will be displayed but not saved
+      }
+    }
+
+    // Create user message with text and/or files
     const userMessage = {
       id: messages.length + 1,
       text: messageText,
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
+      files: uploadedFiles.length > 0 ? [...uploadedFiles] : undefined,
+      savedFiles: savedFiles.length > 0 ? savedFiles : undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setUploadedFiles([]);
     setIsTyping(true);
 
     responseTimeoutRef.current = setTimeout(() => {
-      const responses = [
-        "I understand your query. I'm currently a demo interface, but I can be connected to powerful AI backends like Claude, GPT, or custom models to provide intelligent responses.",
-        "Thanks for your message! This is a demonstration of the chatbot interface. Connect me to your preferred AI service to unlock my full potential.",
-        "I'm processing your request. This UI supports real-time conversations, file uploads, and rich message formatting when connected to an AI backend."
-      ];
+      const responses = savedFiles.length > 0 
+        ? [
+            `I've received and saved your ${savedFiles.length} file(s) to the uploads folder. Files: ${savedFiles.map(f => f.originalName).join(', ')}`,
+            `Thank you for uploading ${savedFiles.length} file(s). They have been saved successfully!`,
+            `Files saved! Your ${savedFiles.length} file(s) are now stored in the uploads directory.`
+          ]
+        : uploadedFiles.length > 0
+        ? [
+            `I received your ${uploadedFiles.length} file(s), but the backend server is not running. Please start the backend to save files.`,
+            `Files uploaded but not saved. Make sure to run 'npm start' in the backend folder.`
+          ]
+        : [
+            "I understand your query. I'm currently a demo interface, but I can be connected to powerful AI backends like Claude, GPT, or custom models to provide intelligent responses.",
+            "Thanks for your message! This is a demonstration of the chatbot interface. Connect me to your preferred AI service to unlock my full potential.",
+            "I'm processing your request. This UI supports real-time conversations, file uploads, and rich message formatting when connected to an AI backend."
+          ];
       
       const botMessage = {
         id: messages.length + 2,
@@ -190,6 +231,43 @@ export default function ChatbotInterface() {
   const handleCancelEdit = () => {
     setEditingMessageId(null);
     setEditText('');
+  };
+
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    
+    const fileObjects = files.map(file => ({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/octet-stream',
+      file: file,
+      url: URL.createObjectURL(file)
+    }));
+
+    setUploadedFiles(prev => [...prev, ...fileObjects]);
+  };
+
+  const handleRemoveFile = (fileId) => {
+    setUploadedFiles(prev => {
+      const fileToRemove = prev.find(f => f.id === fileId);
+      if (fileToRemove && fileToRemove.url) {
+        URL.revokeObjectURL(fileToRemove.url);
+      }
+      return prev.filter(f => f.id !== fileId);
+    });
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (type) => {
+    return <File className="w-4 h-4" />;
   };
 
   return (
@@ -381,7 +459,27 @@ export default function ChatbotInterface() {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm leading-relaxed">{message.text}</p>
+                      <>
+                        <p className="text-sm leading-relaxed">{message.text}</p>
+                        {message.files && message.files.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {message.files.map((file) => (
+                              <div 
+                                key={file.id}
+                                className={`flex items-center gap-2 p-2 rounded-lg ${
+                                  isDarkTheme ? 'bg-slate-700/50' : 'bg-gray-100'
+                                }`}
+                              >
+                                {getFileIcon(file.type)}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium truncate">{file.name}</p>
+                                  <p className="text-xs opacity-60">{formatFileSize(file.size)}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-1.5">
@@ -482,48 +580,115 @@ export default function ChatbotInterface() {
 
           {/* Input Area */}
           <div className="p-4 md:p-5 transition-colors duration-300">
-            <div className="flex gap-3 items-end max-w-4xl mx-auto">
-              <div className="flex-1 relative">
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message here..."
-                  rows={1}
-                  disabled={isTyping}
-                  className={`w-full px-4 py-3 ${
-                    isDarkTheme 
-                      ? 'bg-slate-800/80 border-purple-500/30 text-white placeholder-purple-300/50' 
-                      : 'bg-white border-purple-200 text-gray-900 placeholder-purple-400/50'
-                  } backdrop-blur-sm border rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
-                  style={{ minHeight: '48px', maxHeight: '120px' }}
-                />
-              </div>
-              {isTyping ? (
-                <button
-                  onClick={handleStop}
-                  className="w-12 h-12 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-200 flex-shrink-0 shadow-lg"
-                >
-                  <Square className="w-5 h-5" fill="currentColor" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleSend()}
-                  disabled={!input.trim()}
-                  className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-purple-500/50 transform hover:scale-105 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0 shadow-lg"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
+            <div className="max-w-4xl mx-auto">
+              {/* File Preview Area */}
+              {uploadedFiles.length > 0 && (
+                <div className={`mb-3 p-3 rounded-2xl border ${
+                  isDarkTheme 
+                    ? 'bg-slate-800/80 border-purple-500/30' 
+                    : 'bg-white border-purple-200'
+                } backdrop-blur-sm shadow-lg`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-medium ${
+                      isDarkTheme ? 'text-purple-300' : 'text-purple-600'
+                    }`}>
+                      {uploadedFiles.length} file(s) attached
+                    </span>
+                  </div>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {uploadedFiles.map((file) => (
+                      <div 
+                        key={file.id}
+                        className={`flex items-center gap-2 p-2 rounded-lg ${
+                          isDarkTheme ? 'bg-slate-700/50' : 'bg-gray-50'
+                        }`}
+                      >
+                        {getFileIcon(file.type)}
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-medium truncate ${
+                            isDarkTheme ? 'text-white' : 'text-gray-900'
+                          }`}>{file.name}</p>
+                          <p className={`text-xs ${
+                            isDarkTheme ? 'text-gray-400' : 'text-gray-500'
+                          }`}>{formatFileSize(file.size)}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveFile(file.id)}
+                          className={`p-1 rounded-lg ${
+                            isDarkTheme 
+                              ? 'hover:bg-slate-600 text-gray-400 hover:text-white' 
+                              : 'hover:bg-gray-200 text-gray-500 hover:text-gray-700'
+                          } transition-colors`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
+              
+              <div className="flex gap-3 items-end">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <div className="flex-1 relative">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isTyping}
+                    className={`absolute left-3 bottom-3 p-2 ${
+                      isDarkTheme 
+                        ? 'text-purple-400 hover:text-purple-300 hover:bg-slate-700/50' 
+                        : 'text-purple-600 hover:text-purple-700 hover:bg-purple-50'
+                    } rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed z-10`}
+                    title="Attach files"
+                  >
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your message here..."
+                    rows={1}
+                    disabled={isTyping}
+                    className={`w-full pl-14 pr-4 py-3 ${
+                      isDarkTheme 
+                        ? 'bg-slate-800/80 border-purple-500/30 text-white placeholder-purple-300/50' 
+                        : 'bg-white border-purple-200 text-gray-900 placeholder-purple-400/50'
+                    } backdrop-blur-sm border rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
+                    style={{ minHeight: '48px', maxHeight: '120px' }}
+                  />
+                </div>
+                {isTyping ? (
+                  <button
+                    onClick={handleStop}
+                    className="w-12 h-12 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-red-500/50 transform hover:scale-105 transition-all duration-200 flex-shrink-0 shadow-lg"
+                  >
+                    <Square className="w-5 h-5" fill="currentColor" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleSend()}
+                    disabled={!input.trim() && uploadedFiles.length === 0}
+                    className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl flex items-center justify-center hover:shadow-xl hover:shadow-purple-500/50 transform hover:scale-105 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0 shadow-lg"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+              <p className={`text-center text-xs mt-3 ${
+                isDarkTheme ? 'text-purple-400/40' : 'text-purple-600/40'
+              }`}>
+                Powered by Azure AI • Your conversations are secure
+              </p>
             </div>
-            <p className={`text-center text-xs mt-3 ${
-              isDarkTheme ? 'text-purple-400/40' : 'text-purple-600/40'
-            }`}>
-              Powered by Azure AI • Your conversations are secure
-            </p>
           </div>
-        </div>
       </div>
 
       {/* Settings Modal */}
@@ -585,6 +750,7 @@ export default function ChatbotInterface() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
