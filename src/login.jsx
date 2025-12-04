@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Sparkles, AlertCircle, ArrowRight, Settings, Bot } from 'lucide-react';
+import { useTheme } from './ThemeContext';
 
 
 export default function LoginPage() {
+  const { isDarkTheme, toggleTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   // Dummy credentials for testing
   const DUMMY_EMAIL = 'dev@yamaha.com';
@@ -344,7 +345,7 @@ export default function LoginPage() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setIsDarkTheme(!isDarkTheme)}
+                    onClick={toggleTheme}
                     className={`relative w-14 h-8 rounded-full transition-colors ${
                       isDarkTheme ? 'bg-purple-600' : 'bg-gray-300'
                     }`}

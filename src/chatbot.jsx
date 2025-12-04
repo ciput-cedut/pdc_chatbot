@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, Menu, Settings, Square, Copy, Check, RefreshCw, Edit2, Paperclip, X, File } from 'lucide-react';
+import { useTheme } from './ThemeContext';
 
 export default function ChatbotInterface() {
+  const { isDarkTheme, toggleTheme } = useTheme();
   const [messages, setMessages] = useState([
     { id: 1, text: "Hello! I'm Aeterna. I'm here to make things easier for you. What can I do for you?", sender: 'bot', timestamp: new Date() }
   ]);
@@ -9,7 +11,6 @@ export default function ChatbotInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [regeneratingMessageId, setRegeneratingMessageId] = useState(null);
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
@@ -729,7 +730,7 @@ export default function ChatbotInterface() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setIsDarkTheme(!isDarkTheme)}
+                    onClick={toggleTheme}
                     className={`relative w-14 h-8 rounded-full transition-colors ${
                       isDarkTheme ? 'bg-purple-600' : 'bg-gray-300'
                     }`}
